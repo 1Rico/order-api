@@ -3,7 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -41,4 +43,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function vouchers(): HasMany
+    {
+        return $this->hasMany(Voucher::class);
+    }
+
+    public function validVouchers(): HasMany
+    {
+        return $this->vouchers()->where('times_used', 0)->whereDate('to_date', '>', Carbon::now()->toDateTimeString());
+    }
+
+    public function expiredVouchers(): HasMany
+    {
+        return $this->vouchers()->where('times_used', 0)->whereDate('to_date', '<', Carbon::now()->toDateTimeString());
+    }
 }

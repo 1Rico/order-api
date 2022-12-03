@@ -20,6 +20,6 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('login', 'login');
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::apiResource('voucher', \App\Http\Controllers\VoucherController::class);
 });

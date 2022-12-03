@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('voucher_code', 30)->unique();
             $table->decimal('discount_amount', 10);
             $table->integer('times_used')->default(0);
-            $table->dateTime('from_date')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->dateTime('to_date');
+            $table->timestamp('from_date')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('to_date');
             $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });
