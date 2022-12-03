@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InvalidVoucherException;
 use App\Http\Requests\VoucherStoreRequest;
+use App\Http\Requests\VoucherUpdateRequest;
 use App\Http\Resources\Voucher as VoucherResource;
-
 use App\Models\Voucher;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 
@@ -15,9 +19,10 @@ class VoucherController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
+     * @param Request $request
+     * @return AnonymousResourceCollection
      */
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         $vouchers = match ($request->query('status')) {
             'active' => $request->user()->validVouchers(),
@@ -32,13 +37,13 @@ class VoucherController extends Controller
      * Store a newly created resource in storage.
      *
      * @param VoucherStoreRequest $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function store(VoucherStoreRequest $request)
+    public function store(VoucherStoreRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $validated['voucher_code'] = uniqid('V', true);
+        $validated['voucher_code'] = uniqid('VO', false);
 
         $voucher = $request->user()->vouchers()->create($validated);
 
@@ -49,9 +54,9 @@ class VoucherController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         return $this->sendResponse(new VoucherResource(Voucher::findOrFail($id)));
     }
@@ -59,20 +64,20 @@ class VoucherController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Voucher  $voucher
-     * @return Response
+     * @param VoucherUpdateRequest $request
+     * @param Voucher $voucher
+     * @return Response|JsonResponse
+     * @throws AuthorizationException
      */
-    public function update(Request $request, Voucher $voucher)
+    public function update(VoucherUpdateRequest $request, Voucher $voucher): Response|JsonResponse
     {
         $this->authorize('update', $voucher);
 
-        $validated = $request->validate([
-            'from_date' => 'required|date',
-            'to_date' => 'required|date',
-            'discount_amount' => 'required|integer|min:1',
-            'voucher_code' => 'required|unique:vouchers|max:30'
-        ]);
+        $validated = $request->validated();
+
+        if (!$voucher->isValid()) {
+            return $this->sendError("Voucher is not valid and cannot be updated");
+        }
 
         $voucher->update($validated);
 
@@ -82,10 +87,11 @@ class VoucherController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Voucher  $voucher
+     * @param Voucher $voucher
      * @return Response
+     * @throws AuthorizationException
      */
-    public function destroy(Voucher $voucher)
+    public function destroy(Voucher $voucher): Response
     {
         $this->authorize('delete', $voucher);
 

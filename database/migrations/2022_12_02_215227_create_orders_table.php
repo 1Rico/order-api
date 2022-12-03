@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->decimal('grand_total', 10);
-            $table->decimal('discount_amount', 10);
+            $table->decimal('grand_total', 10)->uns;
+            $table->decimal('discount_amount', 10)->nullable();
             $table->string('voucher_code', 30)->nullable();
             $table->string('order_nr', 30);
             $table->foreignId('user_id')->constrained();

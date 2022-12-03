@@ -49,13 +49,20 @@ class User extends Authenticatable
         return $this->hasMany(Voucher::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function validVouchers(): HasMany
     {
-        return $this->vouchers()->where('times_used', 0)->whereDate('to_date', '>', Carbon::now()->toDateTimeString());
+        return $this->vouchers()->where('times_used', 0)
+            ->whereDate('to_date', '>', Carbon::now()->toDateTimeString());
     }
 
     public function expiredVouchers(): HasMany
     {
-        return $this->vouchers()->where('times_used', 0)->whereDate('to_date', '<', Carbon::now()->toDateTimeString());
+        return $this->vouchers()->whereDate('to_date', '<', Carbon::now()->toDateTimeString())
+            ->orWhere('times_used', '>', 0);
     }
 }

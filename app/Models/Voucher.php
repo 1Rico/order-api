@@ -18,10 +18,6 @@ class Voucher extends Model
         'voucher_code',
     ];
 
-    protected $hidden = [
-        'user_id'
-    ];
-
     protected $dates = [
         'from_date',
         'to_date',
@@ -30,5 +26,11 @@ class Voucher extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function isValid(): bool
+    {
+        return Carbon::parse($this->attributes['to_date'])->gte(Carbon::now()->toDateTimeString())
+            && $this->attributes['times_used']  < 1;
     }
 }

@@ -3,37 +3,18 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
-    /**
-     * Register api
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function register(Request $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
-//        $request->validate([
-//            'name' => ['required', 'string', 'max:255'],
-//            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-//            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-//        ]);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:'.User::class,
-            'password' => 'required|string|min:8',
-            'confirm_password' => 'required|same:password',
-        ]);
-
-        if ($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
+        $request->validated();
 
         $user = User::create([
             'name' => $request->name,
@@ -46,26 +27,20 @@ class RegisterController extends Controller
             'token_type' => 'Bearer'
         ];
 
-        return $this->sendResponse($response, 'User register successfully.');
+        return $this->sendResponse($response, 201);
     }
 
-    /**
-     * Login api
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
-            $user = Auth::user();
-            $response = [
-                'token' => $user->createToken('auth_token')->plainTextToken,
-                'token_type' => 'Bearer'
-            ];
+        $request->validated();
 
-            return $this->sendResponse($response, 'User login successfully.');
+        if ($request->authenticate()) {
+            return $this->sendResponse([
+                'token' => Auth::user()->createToken('auth_token')->plainTextToken,
+                'token_type' => 'Bearer'
+            ]);
         }
 
-        return $this->sendError('Unauthorised.', ['error'=>'Unauthorised'], 401);
+        return $this->sendError('Unauthorised.', [],401);
     }
 }
