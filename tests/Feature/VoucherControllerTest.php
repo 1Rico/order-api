@@ -12,13 +12,13 @@ class VoucherControllerTest extends TestCase
 
     public function test_get_voucher_will_fail_with_404_if_voucher_not_found(): void
     {
-        $response = $this->actingAs($this->createUser(),'sanctum')->json('GET', '/api/vouchers/-1');
+        $response = $this->actingAs($this->createUser(), 'sanctum')->json('GET', '/api/vouchers/-1');
         $response->assertStatus(404);
     }
 
     public function test_update_voucher_will_fail_with_404_if_voucher_not_found(): void
     {
-        $response = $this->actingAs($this->createUser(),'sanctum')->json('PUT', '/api/vouchers/-1');
+        $response = $this->actingAs($this->createUser(), 'sanctum')->json('PUT', '/api/vouchers/-1');
         $response->assertStatus(404);
     }
 
@@ -30,7 +30,7 @@ class VoucherControllerTest extends TestCase
 
     public function test_can_create_a_voucher(): void
     {
-        $response = $this->actingAs($this->createUser(),'sanctum')->json('POST', '/api/vouchers', [
+        $response = $this->actingAs($this->createUser(), 'sanctum')->json('POST', '/api/vouchers', [
             'discount_amount' => $price = random_int(10, 100),
             'to_date' => '2022-12-03T00:17:50.000000Z'
         ]);
@@ -55,8 +55,8 @@ class VoucherControllerTest extends TestCase
         $authUser = $this->createUser();
         $voucher = $this->createVoucherResource();
 
-        $response = $this->actingAs($authUser,'sanctum')->json('PUT', "/api/vouchers/$voucher->id", [
-            'voucher_code' => $voucher->voucher_code.'_updated',
+        $response = $this->actingAs($authUser, 'sanctum')->json('PUT', "/api/vouchers/$voucher->id", [
+            'voucher_code' => $voucher->voucher_code . '_updated',
             'discount_amount' => $voucher->discount_amount + 10,
             'from_date' => $voucher->from_date,
             'to_date' => $voucher->to_date
@@ -65,7 +65,7 @@ class VoucherControllerTest extends TestCase
         $response->assertStatus(204);
 
         $this->assertDatabaseHas('vouchers', [
-            'voucher_code' => $voucher->voucher_code.'_updated',
+            'voucher_code' => $voucher->voucher_code . '_updated',
             'discount_amount' => $voucher->discount_amount + 10,
             'from_date' => $voucher->from_date,
             'to_date' => $voucher->to_date,
@@ -77,7 +77,7 @@ class VoucherControllerTest extends TestCase
         $authUser = $this->createUser();
         $voucher = $this->createVoucherResource();
 
-        $response = $this->actingAs($authUser,'sanctum')->json('DELETE', "/api/vouchers/$voucher->id");
+        $response = $this->actingAs($authUser, 'sanctum')->json('DELETE', "/api/vouchers/$voucher->id");
 
         $response->assertStatus(204);
 
@@ -91,15 +91,15 @@ class VoucherControllerTest extends TestCase
         $authUser = $this->createUser();
         $voucher = $this->createVoucherResource();
 
-        $response = $this->actingAs($authUser,'sanctum')->json('GET', "/api/vouchers/$voucher->id");
+        $response = $this->actingAs($authUser, 'sanctum')->json('GET', "/api/vouchers/$voucher->id");
         $response
             ->assertStatus(200)
             ->assertExactJson([
                 'data' => [
                     'id' => $voucher->id,
                     'voucher_code' => $voucher->voucher_code,
-                    'discount_amount' => "{$voucher->discount_amount}.00",
-                    'times_used' => (int) $voucher->times_used,
+                    'discount_amount' => $voucher->discount_amount,
+                    'times_used' => (int)$voucher->times_used,
                     'to_date' => $voucher->to_date,
                     'from_date' => $voucher->from_date,
                     'user_id' => $voucher->user_id,

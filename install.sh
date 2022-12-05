@@ -14,7 +14,9 @@ docker run --rm \
 echo 'Starting laravel sail'
 ./vendor/bin/sail up -d
 
-echo 'Running migrations'
+echo 'Starting application migrations'
+sleep 10
 ./vendor/bin/sail artisan migrate
 
+echo 'Building config'
 ./vendor/bin/sail artisan key:generate

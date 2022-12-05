@@ -70,7 +70,7 @@ class OrderControllerTest extends TestCase
             ->assertExactJson([
                 'data' => [
                     'id' => $order->id,
-                    'grand_total' => "{$order->grand_total}.00",
+                    'grand_total' => $order->grand_total,
                     'discount_amount' => $order->discount_amount,
                     'voucher_code' => $order->voucher_code,
                     'order_nr' => $order->order_nr,

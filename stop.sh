@@ -1,4 +1,4 @@
 #!/bin/sh
 
 echo 'stopping laravel sail'
-./vendor/bin/sail down
+./vendor/bin/sail down -v
